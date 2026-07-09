@@ -8,6 +8,10 @@ import { resolveApprovalRequest } from "@/lib/repositories/approvals";
 import { approveAndSimulateIfTransfer } from "@/lib/telegram/simulateTransfer";
 import { ensureTelegramUser } from "@/lib/repositories/telegramUsers";
 import { checkRateLimit, RateLimitError } from "@/lib/security/rateLimit";
+import {
+  getTelegramDenyMessage,
+  isTelegramUserAllowed,
+} from "@/lib/security/telegramAllowlist";
 
 const START_MESSAGE = `Crypto Operations Secretary
 
@@ -58,6 +62,16 @@ export async function handleTelegramCommand(
   if (!command) return false;
 
   const userId = String(message.from?.id ?? "unknown");
+
+  if (
+    !isTelegramUserAllowed({
+      telegramUserId: userId,
+      username: message.from?.username,
+    })
+  ) {
+    await send(ctx, getTelegramDenyMessage());
+    return true;
+  }
 
   try {
     await checkRateLimit(userId, "telegram_message");

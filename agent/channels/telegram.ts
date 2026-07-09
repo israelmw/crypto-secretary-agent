@@ -5,8 +5,28 @@ import {
 } from "@/lib/telegram/commands";
 import { approveAndSimulateIfTransfer } from "@/lib/telegram/simulateTransfer";
 import { resolveApprovalRequest } from "@/lib/repositories/approvals";
+import {
+  getTelegramDenyMessage,
+  isTelegramUserAllowed,
+} from "@/lib/security/telegramAllowlist";
 
 const botUsername = process.env.TELEGRAM_BOT_USERNAME?.replace("@", "");
+
+function denyUnlessAllowed(
+  ctx: { telegram: { sendMessage: (message: string) => Promise<unknown> } },
+  message: { from?: { id?: string | number; username?: string } | null },
+): boolean {
+  const telegramUserId = String(message.from?.id ?? "unknown");
+  const allowed = isTelegramUserAllowed({
+    telegramUserId,
+    username: message.from?.username,
+  });
+  if (!allowed) {
+    void ctx.telegram.sendMessage(getTelegramDenyMessage());
+    return true;
+  }
+  return false;
+}
 
 export default telegramChannel({
   botUsername,
@@ -19,6 +39,8 @@ export default telegramChannel({
     maxBytes: 10 * 1024 * 1024,
   },
   onMessage: async (ctx, message) => {
+    if (denyUnlessAllowed(ctx, message)) return null;
+
     const text = message.text ?? message.caption ?? "";
 
     const secretCheck = checkInboundSecrets(text);
@@ -48,6 +70,8 @@ export default telegramChannel({
     };
   },
   onCallbackQuery: async (ctx, query) => {
+    if (denyUnlessAllowed(ctx, query)) return;
+
     const data = query.data ?? "";
     if (data.startsWith("approve:")) {
       const approvalId = data.replace("approve:", "");
