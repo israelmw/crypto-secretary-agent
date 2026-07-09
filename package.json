@@ -1,7 +1,8 @@
 {
-  "name": "toni",
-  "version": "0.0.0",
+  "name": "crypto-secretary-agent",
+  "version": "0.1.0",
   "type": "module",
+  "packageManager": "pnpm@10.12.1",
   "imports": {
     "#*": "./agent/*",
     "#evals/*": "./evals/*"
@@ -13,13 +14,15 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "build:eve": "eve build",
     "dev:eve": "eve dev",
-    "start:eve": "eve start"
+    "start:eve": "eve start",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:push": "drizzle-kit push",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
-    "@vercel/connect": "0.2.2",
-    "ai": "^7.0.0",
-    "eve": "^0.22.2",
-    "zod": "4.4.3",
+    "@neondatabase/serverless": "^1.1.0",
     "@radix-ui/react-use-controllable-state": "1.2.2",
     "@shikijs/core": "4.1.0",
     "@shikijs/engine-javascript": "4.1.0",
@@ -29,9 +32,15 @@
     "@streamdown/math": "1.0.2",
     "@streamdown/mermaid": "1.0.2",
     "@tailwindcss/postcss": "4.3.0",
+    "@upstash/redis": "^1.38.0",
+    "@vercel/blob": "^2.6.1",
+    "@vercel/connect": "0.2.2",
+    "ai": "^7.0.0",
     "class-variance-authority": "0.7.1",
     "clsx": "2.1.1",
     "cmdk": "1.1.1",
+    "drizzle-orm": "^0.45.2",
+    "eve": "^0.22.2",
     "lucide-react": "1.16.0",
     "motion": "12.40.0",
     "nanoid": "5.1.11",
@@ -43,16 +52,25 @@
     "streamdown": "2.5.0",
     "tailwind-merge": "3.6.0",
     "tailwindcss": "4.3.0",
-    "use-stick-to-bottom": "1.1.4"
+    "use-stick-to-bottom": "1.1.4",
+    "zod": "4.4.3"
   },
   "devDependencies": {
     "@types/node": "24.x",
-    "typescript": "6.0.3",
     "@types/react": "19.2.15",
-    "@types/react-dom": "19.2.3"
+    "@types/react-dom": "19.2.3",
+    "drizzle-kit": "^0.31.10",
+    "typescript": "6.0.3",
+    "vitest": "^4.1.10"
   },
-  "resolutions": {
-    "ai": "^7.0.0"
+  "pnpm": {
+    "overrides": {
+      "ai": "^7.0.0"
+    },
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "sharp"
+    ]
   },
   "engines": {
     "node": "24.x"
