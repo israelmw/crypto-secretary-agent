@@ -25,10 +25,11 @@ export default defineTool({
               },
             );
             if (response.ok) {
-              const data = await response.json();
+              const data = (await response.json()) as Record<string, unknown>;
+              const assets = Array.isArray(data.assets) ? data.assets : [];
               return {
                 totalBalance: data.totalBalance ?? data.total ?? "N/A",
-                assets: data.assets ?? [],
+                assets,
                 change24h: data.change24h ?? "0%",
                 riskNotes: ["Data from sandbox API."],
                 source: "sandbox",

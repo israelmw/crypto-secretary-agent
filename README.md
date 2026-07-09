@@ -19,8 +19,7 @@ A production-quality **demo** agent built with [Vercel Eve](https://eve.dev) —
 ## Stack
 
 - **Eve** — agent framework (tools, skills, channels, durable sessions)
-- **Next.js** — web chat admin/debug surface (from Eve Chat Template)
-- **Telegram** — primary demo channel (`eve/channels/telegram`)
+- **Telegram** — sole interface (`eve/channels/telegram`)
 - **Neon Postgres** + **Drizzle ORM** — durable persistence
 - **Upstash Redis** — rate limits, session cache, idempotency locks
 - **Vercel Blob** — API docs, OpenAPI specs, summaries, exports
@@ -33,8 +32,7 @@ agent/
   agent.ts              # Eve agent config
   instructions.md       # System prompt
   channels/
-    telegram.ts         # Primary channel
-    eve.ts              # Web chat (debug/admin)
+    telegram.ts         # Telegram webhook channel
   tools/                # 14 typed tools
   skills/               # Safety & behavior skills
 db/                     # Drizzle schema + migrations
@@ -92,6 +90,7 @@ BLOB_READ_WRITE_TOKEN=...
 TELEGRAM_BOT_TOKEN=...
 TELEGRAM_WEBHOOK_SECRET_TOKEN=...
 TELEGRAM_BOT_USERNAME=...
+ALLOWED_TELEGRAM_USERNAMES=admtoni,abetanex,israelmw
 DEMO_MASTER_KEY=your-long-random-demo-key
 CRYPTO_API_BASE_URL=https://sandbox-api.example.com
 CRYPTO_API_TOKEN=sandbox-token
@@ -101,20 +100,17 @@ CRYPTO_API_MODE=sandbox
 ### 8. Run locally
 
 ```bash
-# Eve dev server (agent + tools)
-pnpm dev:eve --no-ui
-
-# Next.js web chat (debug/admin) — separate terminal
 pnpm dev
 ```
 
 ### 9. Deploy to Vercel
 
 ```bash
+pnpm build
 vercel deploy
 ```
 
-Set all environment variables in the Vercel project settings.
+Set all environment variables in the Vercel project settings. The build command is `pnpm build` (`eve build`).
 
 ### 10. Configure Telegram webhook
 
@@ -137,6 +133,7 @@ curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 | `TELEGRAM_BOT_TOKEN` | Yes | Telegram bot token |
 | `TELEGRAM_WEBHOOK_SECRET_TOKEN` | Yes | Webhook verification secret |
 | `TELEGRAM_BOT_USERNAME` | Yes | Bot username (no `@`) |
+| `ALLOWED_TELEGRAM_USERNAMES` | Yes | Comma-separated allowed usernames |
 | `DEMO_MASTER_KEY` | Yes | Demo encryption key (min 16 chars) |
 | `CRYPTO_API_BASE_URL` | No | Sandbox API base URL |
 | `CRYPTO_API_TOKEN` | No | Sandbox API token (env only) |
@@ -209,6 +206,7 @@ curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/setWebhook" \
 ```bash
 pnpm test
 pnpm typecheck
+pnpm build
 ```
 
 Security tests cover:
@@ -224,7 +222,7 @@ Security tests cover:
 - Risk scores are simulated, not from licensed analytics
 - `DEMO_MASTER_KEY` is demo-grade encryption only
 - API tokens must be configured via env vars, not per-user
-- Web chat is a debug surface; Telegram is the primary interface
+- Telegram is the only interface; no web UI
 - `CRYPTO_API_MODE=production` still blocks all money movement
 
 ## Before production
